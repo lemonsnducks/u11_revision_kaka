@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Matchup & Mastery - Vocabulary Game</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Lexend:wght@300..800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+            background: radial-gradient(circle at top, #1e1b4b 0%, #0f172a 100%);
+            overscroll-behavior: none;
+        }
+        .fun-font {
+            font-family: 'Fredoka', sans-serif;
+        }
+        /* Custom scrollbar for beautiful lists */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.3);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4f46e5;
+            border-radius: 4px;
+        }
+        /* Animations */
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop-in {
+            animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        .correct-flash {
+            animation: correctPulse 0.5s ease-out;
+        }
+        @keyframes correctPulse {
+            0% { background-color: rgba(34, 197, 94, 0.2); }
+            50% { background-color: rgba(34, 197, 94, 0.6); }
+            100% { background-color: transparent; }
+        }
+        .incorrect-flash {
+            animation: shake 0.4s ease-in-out;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden select-none">
+
+    <!-- Top Navigation Bar / Progress Header -->
+    <header class="w-full bg-slate-900/80 backdrop-blur-md border-b border-indigo-500/20 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+        <div class="flex items-center space-x-3">
+            <button onclick="backToSplash()" class="bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 p-2.5 rounded-2xl transition-all flex items-center justify-center">
+                <i class="fa-solid fa-home text-lg"></i>
+            </button>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black tracking-wide bg-gradient-to-r from-cyan-400 via-indigo-400 to-pink-500 bg-clip-text text-transparent fun-font">
+                    Media Matchup
+                </h1>
+                <p class="text-[10px] text-slate-400 hidden sm:block" id="sub-mode-header">Select your study path</p>
+            </div>
+        </div>
+        
+        <!-- Score & Global Progress -->
+        <div class="flex items-center space-x-4">
+            <div class="bg-slate-800/80 border border-slate-700/50 rounded-2xl px-4 py-2 flex items-center space-x-2">
+                <i class="fa-solid fa-award text-yellow-400 text-lg"></i>
+                <div>
+                    <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Score</div>
+                    <div id="global-score" class="text-lg font-extrabold text-white fun-font">000</div>
+                </div>
+            </div>
+            <div class="bg-slate-800/80 border border-slate-700/50 rounded-2xl px-4 py-2 flex items-center space-x-2">
+                <i class="fa-solid fa-bolt text-amber-400 text-lg"></i>
+                <div>
+                    <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Streak</div>
+                    <div id="streak-counter" class="text-lg font-extrabold text-amber-400 fun-font">0</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow container mx-auto px-4 py-6 flex flex-col items-center justify-center max-w-4xl">
+        
+        <!-- Splash / Welcome Screen -->
+        <div id="splash-screen" class="w-full pop-in bg-slate-800/60 border border-slate-700/60 rounded-3xl p-6 md:p-10 text-center shadow-2xl relative overflow-hidden backdrop-blur-md">
+            <div class="absolute -top-10 -left-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-2xl"></div>
+            <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-pink-500/10 rounded-full blur-2xl"></div>
+            
+            <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-widest inline-block mb-4">
+                Interactive Vocabulary Quest
+            </span>
+            <h2 class="text-3xl md:text-5xl font-black mb-4 tracking-tight text-white fun-font">Two Sides to Every Story</h2>
+            
+            <p class="text-slate-300 text-sm md:text-base max-w-xl mx-auto mb-8 leading-relaxed">
+                Master all 35 critical words through Meaning, Spelling, and Context challenges! Choose your path below: complete the campaign step-by-step or focus purely on a single skill!
+            </p>
+
+            <!-- Mode Selector Panels -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto mb-8">
+                <!-- Campaign Card -->
+                <div class="bg-indigo-950/40 p-6 rounded-2xl border border-indigo-500/30 flex flex-col justify-between text-left relative shadow-lg">
+                    <span class="absolute top-4 right-4 bg-indigo-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Level-by-Level</span>
+                    <div class="mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-3 text-xl">
+                            <i class="fa-solid fa-route"></i>
+                        </div>
+                        <h3 class="font-extrabold text-white text-lg fun-font">Option 1: Campaign Journey</h3>
+                        <p class="text-xs text-slate-300 mt-1 leading-relaxed">Play level-by-level! Progress smoothly from Stage 1 (Meanings) through Stage 2 (Spelling) into Stage 3 (Context Completion) to claim the crown.</p>
+                    </div>
+                    <button onclick="startPlayMode('campaign')" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-600/20 transition-all transform active:scale-95">
+                        <i class="fa-solid fa-play mr-1.5"></i> Play Campaign
+                    </button>
+                </div>
+
+                <!-- Focus Practice Card -->
+                <div class="bg-pink-950/20 p-6 rounded-2xl border border-pink-500/25 flex flex-col justify-between text-left relative shadow-lg">
+                    <span class="absolute top-4 right-4 bg-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider font-mono font-bold">Skill Focus</span>
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center mb-3 text-xl">
+                            <i class="fa-solid fa-bullseye"></i>
+                        </div>
+                        <h3 class="font-extrabold text-white text-lg fun-font">Option 2: Focus Practice</h3>
+                        <p class="text-xs text-slate-300 mt-1 leading-relaxed mb-4">Target a single skill. Choose exactly which exercise you want to practice. Meanings and Spelling modes will test you on all 35 words!</p>
+                        
+                        <!-- Mini grid of selection buttons for Focus Mode -->
+                        <div class="grid grid-cols-1 gap-2">
+                            <button onclick="startPlayMode('focus_meanings')" class="py-2.5 px-3 bg-slate-900 hover:bg-indigo-950 hover:border-indigo-500 border border-slate-700/50 text-slate-200 rounded-xl text-xs font-bold transition-all text-left flex items-center justify-between">
+                                <span><i class="fa-solid fa-book-open text-cyan-400 mr-2"></i> Practice Meanings (All 35 Words)</span>
+                                <i class="fa-solid fa-chevron-right text-[10px] text-slate-500"></i>
+                            </button>
+                            <button onclick="startPlayMode('focus_spelling')" class="py-2.5 px-3 bg-slate-900 hover:bg-indigo-950 hover:border-indigo-500 border border-slate-700/50 text-slate-200 rounded-xl text-xs font-bold transition-all text-left flex items-center justify-between">
+                                <span><i class="fa-solid fa-spell-check text-indigo-400 mr-2"></i> Practice Spelling (All 35 Words)</span>
+                                <i class="fa-solid fa-chevron-right text-[10px] text-slate-500"></i>
+                            </button>
+                            <button onclick="startPlayMode('focus_story')" class="py-2.5 px-3 bg-slate-900 hover:bg-indigo-950 hover:border-indigo-500 border border-slate-700/50 text-slate-200 rounded-xl text-xs font-bold transition-all text-left flex items-center justify-between">
+                                <span><i class="fa-solid fa-feather-pointed text-pink-400 mr-2"></i> Practice Stories (3 Dynamic Cases)</span>
+                                <i class="fa-solid fa-chevron-right text-[10px] text-slate-500"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Button -->
+            <div class="flex justify-center">
+                <button onclick="openWordList()" class="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-list-check"></i> Review Complete Word List (<span id="total-word-count">35</span>)
+                </button>
+            </div>
+        </div>
+
+        <!-- Word List Review Modal (Overlay styled) -->
+        <div id="word-list-screen" class="w-full max-w-3xl bg-slate-800/90 border border-indigo-500/20 rounded-3xl p-6 hidden pop-in backdrop-blur-lg">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-extrabold text-white fun-font flex items-center gap-2">
+                    <i class="fa-solid fa-graduation-cap text-indigo-400"></i> Word Vault
+                </h3>
+                <button onclick="closeWordList()" class="bg-slate-700 hover:bg-slate-600 text-white w-10 h-10 rounded-full flex items-center justify-center transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="bg-slate-900/60 rounded-2xl p-4 mb-4 text-xs md:text-sm text-indigo-300 border border-indigo-500/10 flex items-center gap-2">
+                <i class="fa-solid fa-info-circle text-lg"></i>
+                We loaded all the 35 target words you selected, focusing on critical spelling, meanings, and original text context. Use this dictionary to study before starting!
+            </div>
+
+            <div class="max-h-[50vh] overflow-y-auto pr-2 space-y-3" id="dictionary-container">
+                <!-- Populated dynamically -->
+            </div>
+            
+            <div class="mt-6 flex justify-end">
+                <button onclick="startGame(false)" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all">
+                    I'm Ready, Let's Play! <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Stage Navigation / Progress indicator during gameplay -->
+        <div id="game-hud" class="w-full max-w-2xl mb-4 hidden flex flex-col space-y-2">
+            <!-- Stage Pills -->
+            <div class="flex items-center justify-between">
+                <div class="flex space-x-2">
+                    <span id="pill-stage-1" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">Stage 1: Meanings</span>
+                    <span id="pill-stage-2" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">Stage 2: Spelling</span>
+                    <span id="pill-stage-3" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">Stage 3: Context</span>
+                </div>
+                <div class="text-xs font-semibold text-slate-400" id="round-indicator">Word 1 / 10</div>
+            </div>
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                <div id="stage-progress-bar" class="bg-gradient-to-r from-cyan-400 via-indigo-500 to-pink-500 h-full transition-all duration-300" style="width: 10%"></div>
+            </div>
+        </div>
+
+        <!-- STAGE 1: Meaning Matcher Interface -->
+        <div id="stage-1-panel" class="w-full max-w-2xl bg-slate-800/40 border border-slate-700/60 rounded-3xl p-6 hidden pop-in backdrop-blur-md relative">
+            <div class="text-center mb-6">
+                <div class="inline-block px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-extrabold uppercase tracking-widest mb-1">
+                    Stage 1: Match the Definition
+                </div>
+                <h3 class="text-lg text-slate-300">Tap the correct definition card for the word below:</h3>
+            </div>
+
+            <!-- Target Word Prompt Display -->
+            <div class="bg-slate-900/80 border-2 border-indigo-500/30 rounded-2xl p-6 mb-6 text-center relative shadow-inner">
+                <div class="absolute top-2 right-3 text-slate-500 text-xs">Target Word</div>
+                <div id="s1-target-word" class="text-3xl md:text-4xl font-black text-white fun-font tracking-wide">
+                    poignant
+                </div>
+                <div id="s1-word-clue" class="text-xs text-indigo-300 mt-2 italic">
+                    "A poignant moment when a wrongly convicted man is finally set free."
+                </div>
+            </div>
+
+            <!-- Options Grid (Optimized for fast tapping on tablets) -->
+            <div class="grid grid-cols-1 gap-3" id="s1-options-container">
+                <!-- Option Buttons Populated Dynamically -->
+            </div>
+            
+            <div class="mt-4 flex justify-between items-center text-xs text-slate-400 px-1">
+                <span>⚡ Get +50 pts for correct answer</span>
+                <span id="s1-quick-tip" class="italic">Tip: Tap carefully! Mistakes break your streak.</span>
+            </div>
+        </div>
+
+        <!-- STAGE 2: Spelling Slinger Interface -->
+        <div id="stage-2-panel" class="w-full max-w-2xl bg-slate-800/40 border border-slate-700/60 rounded-3xl p-6 hidden pop-in backdrop-blur-md">
+            <div class="text-center mb-4">
+                <div class="inline-block px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-extrabold uppercase tracking-widest mb-1">
+                    Stage 2: Paparazzi Spelling Shoot
+                </div>
+                <h3 class="text-sm text-slate-300">Assemble the letters in order before your camera flash is ready!</h3>
+            </div>
+
+            <!-- Definition Banner -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 mb-5 text-center text-slate-200">
+                <p id="s2-definition-prompt" class="text-sm italic text-slate-300 font-medium">"Extremely distressing to the feelings; touchingly sad."</p>
+                <div class="text-xs text-slate-500 mt-1 uppercase tracking-widest">Meaning</div>
+            </div>
+
+            <!-- Construction Yard / Current Spelled Word -->
+            <div class="flex flex-col items-center justify-center mb-6">
+                <!-- Live Display Box -->
+                <div class="flex flex-wrap gap-2 justify-center items-center min-h-[60px] w-full bg-slate-950/60 rounded-2xl p-3 border border-indigo-500/20 shadow-inner relative" id="s2-constructed-word-area">
+                    <!-- Populated dynamically with letters that look like snapshots -->
+                </div>
+                <div class="text-xs text-indigo-400 mt-1.5 flex gap-4">
+                    <span class="hover:underline cursor-pointer" onclick="backspaceSpell()"><i class="fa-solid fa-delete-left"></i> Delete last letter</span>
+                    <span class="hover:underline cursor-pointer" onclick="clearSpell()"><i class="fa-solid fa-rotate-left"></i> Start over</span>
+                </div>
+            </div>
+
+            <!-- Scrambled Letter Source Buttons (Highly colorful and touch-ready) -->
+            <div class="flex flex-wrap justify-center gap-2 mb-6" id="s2-scrambled-pool">
+                <!-- Interactive letter bubbles -->
+            </div>
+
+            <div class="flex justify-center gap-3">
+                <button onclick="checkSpelling()" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold rounded-xl shadow-lg transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-camera"></i> Shoot Snap! (Submit)
+                </button>
+            </div>
+        </div>
+
+        <!-- STAGE 3: Story Fill-In Interface -->
+        <div id="stage-3-panel" class="w-full max-w-2xl bg-slate-800/40 border border-slate-700/60 rounded-3xl p-6 hidden pop-in backdrop-blur-md">
+            
+            <!-- Dynamic Story Tabs (Allowing students to play different stories to practice all remaining words) -->
+            <div class="mb-4">
+                <p class="text-xs text-slate-400 mb-2 uppercase tracking-wider font-extrabold text-center">Select Study Case Paragraph:</p>
+                <div class="flex flex-wrap justify-center gap-2" id="story-selector-tabs">
+                    <!-- Buttons built dynamically -->
+                </div>
+            </div>
+
+            <div class="text-center mb-4">
+                <div class="inline-block px-3 py-1 rounded-full bg-pink-500/10 text-pink-400 text-xs font-extrabold uppercase tracking-widest mb-1">
+                    Stage 3: Story Investigator
+                </div>
+                <h3 class="text-sm text-slate-300">Tap a target blank, then tap the matching word below!</h3>
+            </div>
+
+            <!-- Context Paragraph with Blanks -->
+            <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 md:p-6 mb-6 leading-relaxed text-sm md:text-base text-slate-200 shadow-inner relative">
+                <div class="absolute top-2 right-3 text-pink-400/50 text-xs flex items-center gap-1">
+                    <i class="fa-solid fa-feather"></i> Case Excerpt
+                </div>
+                
+                <div id="s3-story-text" class="pt-4 pb-2 space-y-4">
+                    <!-- Dynamic paragraphs with highlighted blanks -->
+                </div>
+            </div>
+
+            <!-- Word Bank Pool -->
+            <div class="mb-4">
+                <p class="text-xs text-slate-400 mb-2 uppercase tracking-wider font-bold">Word Bank:</p>
+                <div class="flex flex-wrap justify-center gap-2" id="s3-word-bank">
+                    <!-- Target Words as pills -->
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center border-t border-slate-700/50 pt-4 mt-2">
+                <div class="text-xs text-slate-400">
+                    <i class="fa-solid fa-circle-question"></i> Select an empty slot, then select your word!
+                </div>
+                <button id="s3-check-btn" onclick="checkStoryAnswers()" class="px-6 py-2.5 bg-pink-600 hover:bg-pink-500 text-white font-bold rounded-xl transition-all shadow-md flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check"></i> Validate Story
+                </button>
+            </div>
+        </div>
+
+        <!-- Feedback Overlay / Notification Toast -->
+        <div id="feedback-alert" class="fixed bottom-12 left-1/2 -translate-x-1/2 z-50 flex items-center space-x-3 px-6 py-3.5 rounded-2xl shadow-2xl border hidden pop-in max-w-sm w-[90%]">
+            <div id="feedback-icon" class="text-xl"></div>
+            <div>
+                <h4 id="feedback-title" class="font-bold text-sm"></h4>
+                <p id="feedback-desc" class="text-xs text-slate-200 mt-0.5"></p>
+            </div>
+        </div>
+
+        <!-- SCOREBOARD & CONCLUSION MODAL -->
+        <div id="game-over-screen" class="w-full max-w-2xl bg-slate-800/90 border border-indigo-500/30 rounded-3xl p-8 hidden pop-in text-center relative backdrop-blur-xl">
+            <div class="absolute -top-12 left-1/2 -translate-x-1/2 bg-yellow-400 text-slate-900 w-24 h-24 rounded-full flex items-center justify-center text-4xl shadow-lg shadow-yellow-400/20 float-animation border-4 border-slate-800">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+
+            <div class="mt-10 mb-6">
+                <h2 class="text-4xl font-extrabold text-white fun-font mb-1" id="conclusion-headline">Perfect Exposé!</h2>
+                <p class="text-slate-400 text-sm" id="conclusion-desc">You successfully mastered the media vocabulary battle!</p>
+            </div>
+
+            <!-- Stats Dashboard -->
+            <div class="grid grid-cols-3 gap-3 mb-8">
+                <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4">
+                    <div class="text-[10px] text-slate-500 tracking-widest font-bold uppercase">Total Points</div>
+                    <div id="final-score" class="text-2xl font-black text-indigo-400 fun-font mt-1">1250</div>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4">
+                    <div class="text-[10px] text-slate-500 tracking-widest font-bold uppercase font-mono" id="stat-label-streak">Max Streak</div>
+                    <div id="final-streak" class="text-2xl font-black text-amber-400 fun-font mt-1">12</div>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4">
+                    <div class="text-[10px] text-slate-500 tracking-widest font-bold uppercase">Game Path</div>
+                    <div id="final-vocab" class="text-xs font-black text-emerald-400 fun-font mt-1 uppercase">Campaign</div>
+                </div>
+            </div>
+
+            <!-- Interactive Report Card: Strengths & Weaknesses -->
+            <div class="bg-slate-900/40 border border-slate-800 rounded-2xl p-4 text-left mb-6 text-sm">
+                <h4 class="font-bold text-white mb-2 flex items-center gap-1.5 text-xs text-indigo-300 uppercase tracking-wider">
+                    <i class="fa-solid fa-microscope"></i> Diagnostic Report
+                </h4>
+                <div class="space-y-1.5 text-slate-300 text-xs">
+                    <div class="flex justify-between border-b border-slate-800/60 pb-1.5">
+                        <span>Meaning accuracy:</span>
+                        <span id="stat-meaning-acc" class="font-bold text-white">100%</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-800/60 pb-1.5">
+                        <span>Spelling accuracy:</span>
+                        <span id="stat-spelling-acc" class="font-bold text-white">100%</span>
+                    </div>
+                    <div class="flex justify-between pb-0.5">
+                        <span>Completion Rate:</span>
+                        <span class="font-bold text-white text-emerald-400">100% Finished</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <button onclick="startGame(true)" class="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black rounded-xl shadow-lg shadow-emerald-500/15 transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-repeat"></i> Play Again
+                </button>
+                <button onclick="backToSplash()" class="px-6 py-4 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-home"></i> Main Menu
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full text-center py-4 bg-slate-950/30 text-xs text-slate-500 border-t border-slate-900">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-2">
+            <span>"Two Sides to Every Story" Vocab Companion • Tablet Optimized</span>
+            <span class="flex items-center gap-3">
+                <span>Created for Interactive Study</span>
+                <span class="text-indigo-400">|</span>
+                <button onclick="openWordList()" class="hover:text-white transition-all underline font-bold text-indigo-400 font-mono">Word Vault List</button>
+            </span>
+        </div>
+    </footer>
+
+    <!-- Core Game Engine -->
+    <script>
+        // Database of 35 Target Words and Phrases derived from the passage
+        const VOCABULARY = [
+            { word: "poignant", definition: "Evoking a keen sense of sadness or regret; touchingly sad.", hint: "A _____ moment when a wrongly convicted man is finally set free.", type: "doc" },
+            { word: "convicted", definition: "Declared to be guilty of a criminal offense by the verdict of a jury or judge.", hint: "An innocent man wrongly _____ is finally set free.", type: "doc" },
+            { word: "paparazzo", definition: "A freelance photographer who pursues celebrities to get photographs of them (singular).", hint: "Aaron Campbell is a _____ who shoots celebrities.", type: "pap" },
+            { word: "paparazzi", definition: "Freelance photographers who pursue celebrities to get photographs of them (plural).", hint: "With Instagram, the days of the _____ might be numbered.", type: "pap" },
+            { word: "gossipy", definition: "Characterized by or fond of talk about other people's private lives.", hint: "The new, _____ style of TV and print journalism has taken over.", type: "pap" },
+            { word: "journalism", definition: "The activity or profession of writing for newspapers, magazines, or news websites.", hint: "Investigative _____ has been surrendered to documentarians.", type: "doc" },
+            { word: "surrender", definition: "Give up or hand over a responsibility, right, or possession to another.", hint: "Traditional media has _____ed the role of serious investigative news.", type: "doc" },
+            { word: "investigative", definition: "Searching thoroughly to find out the truth about something, especially crime or scandals.", hint: "Excellent pieces of _____ journalism made documentaries popular.", type: "doc" },
+            { word: "documentarians", definition: "Filmmakers who specialize in making films about real-world issues, events, or situations.", hint: "The info void is being filled by active _____ around the world.", type: "doc" },
+            { word: "fundamental", definition: "Forming a necessary base or core; of central importance.", hint: "Traditional media is currently in a state of _____ change.", type: "doc" },
+            { word: "bureaus", definition: "Offices or departments for collecting news or transacting business.", hint: "Because international _____ have been decimated, papers declined.", type: "doc" },
+            { word: "decimate", definition: "To destroy or severely damage a large proportion of something.", hint: "International reporting offices have been _____ed.", type: "doc" },
+            { word: "revenues", definition: "The income of an organization or company; earnings.", hint: "Newspaper advertising _____ were wiped out by online marketing.", type: "doc" },
+            { word: "void", definition: "A completely empty space; gap where something was.", hint: "The information _____ is being filled by documentary filmmakers.", type: "doc" },
+            { word: "gripping", definition: "Exciting or interesting in a way that keeps your attention completely.", hint: "The content of documentaries is more _____ than news.", type: "doc" },
+            { word: "outrage", definition: "An extremely strong reaction of anger, shock, or indignation.", hint: "Documentaries are often fueled by passion and moral _____.", type: "doc" },
+            { word: "delve", definition: "Reach inside, dig, or search deeply for information.", hint: "They don't just scratch the surface but rather _____ deep into issues.", type: "doc" },
+            { word: "scratch the surface", definition: "To deal with only a very small, obvious part of a subject or problem.", hint: "Great investigative films don't just _____; they go deep.", type: "doc" },
+            { word: "strike a chord", definition: "To cause someone to feel sympathy, emotion, or enthusiasm.", hint: "Documentaries have _____ with the public.", type: "doc" },
+            { word: "catastrophes", definition: "Disasters or events causing great and sudden damage or suffering.", hint: "Documentaries deal with environmental _____ and injustices.", type: "doc" },
+            { word: "injustices", definition: "Lack of fairness or justice; unfair treatment.", hint: "The film exposed the harsh _____ of the legal system.", type: "doc" },
+            { word: "impassioned", definition: "Filled with or showing great emotion or intense feeling.", hint: "By approaching these subjects in an _____ way, we connect.", type: "doc" },
+            { word: "proverbial", definition: "Well-known, famous, or referred to in a common saying or proverb.", hint: "Approaching the subject like the _____ fly on the wall.", type: "doc" },
+            { word: "hound", definition: "To harass, pursue, or annoy someone relentlessly.", hint: "This cannot be said for the paparazzi that _____ celebrities.", type: "pap" },
+            { word: "accompanying", definition: "Going along with, associated, or occurring in association with something.", hint: "People click on stories to see the _____ photos.", type: "pap" },
+            { word: "discreet", definition: "Careful and circumspect in one's speech or actions, especially to avoid embarrassment.", hint: "Most people would deny taking a _____ peek at the gossip.", type: "pap" },
+            { word: "insatiable", definition: "Impossible to satisfy; an appetite or desire that cannot be filled.", hint: "It's the public's _____ demand for gossip that keeps them in business.", type: "pap" },
+            { word: "emphatically", definition: "In a forceful, definite, and decisive way.", hint: "'If they're not in the press, they don't exist,' he said _____.", type: "pap" },
+            { word: "unflattering", definition: "Making someone look less attractive or worse than they really are.", hint: "Tabloids love buying _____ photos of famous actors.", type: "pap" },
+            { word: "seedier", definition: "Shabby, disreputable, or morally degraded.", hint: "Unflattering photos are usually published in the _____ tabloids.", type: "pap" },
+            { word: "tabloids", definition: "Newspapers with small pages and short articles, focused mainly on sensational news or gossip.", hint: "Happy celebrities looking stylish are what _____ want to buy.", type: "pap" },
+            { word: "sarcasm", definition: "The use of irony to mock or convey contempt.", hint: "He catches the hint of _____ in my comment and pauses.", type: "pap" },
+            { word: "symbiotic", definition: "A relationship between two entities where they depend closely on and benefit from each other.", hint: "There is a _____ relationship between stars and paparazzi.", type: "pap" },
+            { word: "compliant with", definition: "Willing to carry out, yield, or agree to requests, demands, or rules.", hint: "Being _____ the paparazzi can skyrocket a no-name to fame.", type: "pap" },
+            { word: "adrenaline-filled", definition: "Exciting, thrilling, and causing a state of heightened energy or physiological arousal.", hint: "How long will this _____ spying and chasing continue?", type: "pap" }
+        ];
+
+        // Three Diverse Stories covering all 35 words across the dictionary
+        const STORY_POOL = [
+            {
+                title: "Story Case 1: Media in Transition",
+                paragraphs: [
+                    "Traditional print {blank1} is undergoing a {blank2} change. Long gone are the glory days of localized news {blank3} supporting seasoned correspondents worldwide. Instead, we see highly popular independent {blank4} filling the massive information {blank5} left behind. These filmmakers don't just {blank6}; they expose serious {blank7} like environmental {blank8} with gripping video evidence.",
+                    "Meanwhile, the paparazzi scene is different. Elite photographers {blank9} famous people daily because the public has an {blank10} demand for sensational stories. Many celebrities actually have a {blank11} relationship with the cameras, deciding to be {blank12} paparazzi demands in order to stay famous."
+                ],
+                mapping: {
+                    blank1: "journalism",
+                    blank2: "fundamental",
+                    blank3: "bureaus",
+                    blank4: "documentarians",
+                    blank5: "void",
+                    blank6: "scratch the surface",
+                    blank7: "injustices",
+                    blank8: "catastrophes",
+                    blank9: "hound",
+                    blank10: "insatiable",
+                    blank11: "symbiotic",
+                    blank12: "compliant with"
+                }
+            },
+            {
+                title: "Story Case 2: Lottie's Lens (The Search for Truth)",
+                paragraphs: [
+                    "For Lottie, making an indie feature documentary means refusing to {blank1} her artistic control to profit-seeking executives. Her latest film is a highly {blank2} and {blank3} expose of a vulnerable young man who was wrongly {blank4} for a crime he didn't commit.",
+                    "To accomplish this {blank5} project, she had to {blank6} deep into dark corporate conspiracies. Her camera work captured moments of heavy emotional {blank7} and truth. Even as decreasing corporate advertising {blank8} threaten to {blank9} traditional newsrooms, filmmakers like Lottie use their {blank10} narratives to {blank11} with audiences worldwide."
+                ],
+                mapping: {
+                    blank1: "surrender",
+                    blank2: "gripping",
+                    blank3: "poignant",
+                    blank4: "convicted",
+                    blank5: "investigative",
+                    blank6: "delve",
+                    blank7: "outrage",
+                    blank8: "revenues",
+                    blank9: "decimate",
+                    blank10: "impassioned",
+                    blank11: "strike a chord"
+                }
+            },
+            {
+                title: "Story Case 3: Aaron's Lens (Behind the Glitter)",
+                paragraphs: [
+                    "As a veteran {blank1} chasing stars, Aaron lives an {blank2} lifestyle filled with high-stakes midnight pursuits. He makes his living in the fast-paced, {blank3} world of elite celebrity tracking, capturing candid snapshots that the biggest international {blank4} will eagerly buy. He claims {blank5} that actors actually need the {blank6} to remain visible in the media loop.",
+                    "However, many photos end up looking remarkably {blank7} and make the front covers of the {blank8} supermarket rags. Aaron insists he only takes a {blank9} glance when the targets are compliant, though observers meet his defense with cynical {blank10}. The public devours every headline and {blank11} photo, wishing to peek behind the scenes like the {blank12} fly on the wall."
+                ],
+                mapping: {
+                    blank1: "paparazzo",
+                    blank2: "adrenaline-filled",
+                    blank3: "gossipy",
+                    blank4: "tabloids",
+                    blank5: "emphatically",
+                    blank6: "paparazzi",
+                    blank7: "unflattering",
+                    blank8: "seedier",
+                    blank9: "discreet",
+                    blank10: "sarcasm",
+                    blank11: "accompanying",
+                    blank12: "proverbial"
+                }
+            }
+        ];
+
+        // State variables
+        let score = 0;
+        let streak = 0;
+        let maxStreak = 0;
+        let playMode = 'campaign'; // 'campaign' | 'focus_meanings' | 'focus_spelling' | 'focus_story'
+        let currentStage = 1; // 1: Meaning, 2: Spelling, 3: Context
+        let currentRoundIndex = 0; // tracking progression in current stage
+        let selectedStageWords = []; // dynamic subset of words for active stage
+        
+        // Stage 1 tracking
+        let s1TargetWordObject = null;
+        let s1CorrectLetter = "";
+
+        // Stage 2 spelling game states
+        let currentSpellingWord = null;
+        let userSpelledArray = [];
+        let scrambledLettersArray = [];
+
+        // Stage 3 state (Multi-story dynamic states)
+        let activeStoryIndex = 0;
+        let storyBlanksSelected = {};   // maps blankId -> user chosen word
+        let activeBlankId = null;       // currently highlighted slot
+
+        // Initialize dictionary view on startup
+        window.addEventListener('DOMContentLoaded', () => {
+            renderDictionary();
+            document.getElementById('total-word-count').innerText = VOCABULARY.length;
+        });
+
+        // Dictionary Generator
+        function renderDictionary() {
+            const container = document.getElementById('dictionary-container');
+            container.innerHTML = "";
+            VOCABULARY.forEach(item => {
+                const colorClass = item.type === 'doc' ? 'border-cyan-500/20 bg-cyan-950/15' : 'border-pink-500/20 bg-pink-950/15';
+                const tagColor = item.type === 'doc' ? 'bg-cyan-500/20 text-cyan-400' : 'bg-pink-500/20 text-pink-400';
+                const tagLabel = item.type === 'doc' ? 'Documentary' : 'Paparazzi';
+                
+                const itemHtml = `
+                    <div class="p-4 rounded-xl border ${colorClass} transition-all duration-200 hover:scale-[1.01]">
+                        <div class="flex flex-wrap justify-between items-center mb-1.5 gap-2">
+                            <span class="text-base font-extrabold text-white tracking-wide font-mono">${item.word}</span>
+                            <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase ${tagColor}">${tagLabel}</span>
+                        </div>
+                        <p class="text-xs text-slate-300 font-medium mb-1"><span class="text-slate-500">Def:</span> ${item.definition}</p>
+                        <p class="text-[11px] text-indigo-300/80 italic"><span class="text-slate-500 font-normal">Context:</span> "${item.hint}"</p>
+                    </div>
+                `;
+                container.innerHTML += itemHtml;
+            });
+        }
+
+        function openWordList() {
+            document.getElementById('splash-screen').classList.add('hidden');
+            document.getElementById('word-list-screen').classList.remove('hidden');
+        }
+
+        function closeWordList() {
+            document.getElementById('word-list-screen').classList.add('hidden');
+            document.getElementById('splash-screen').classList.remove('hidden');
+        }
+
+        function backToSplash() {
+            document.getElementById('game-over-screen').classList.add('hidden');
+            document.getElementById('game-hud').classList.add('hidden');
+            document.getElementById('stage-1-panel').classList.add('hidden');
+            document.getElementById('stage-2-panel').classList.add('hidden');
+            document.getElementById('stage-3-panel').classList.add('hidden');
+            document.getElementById('splash-screen').classList.remove('hidden');
+            document.getElementById('sub-mode-header').innerText = "Select your study path";
+        }
+
+        // Global Alert Box (No native alerts allowed!)
+        function showAlert(title, desc, status = "success") {
+            const alertBox = document.getElementById('feedback-alert');
+            const alertIcon = document.getElementById('feedback-icon');
+            const alertTitle = document.getElementById('feedback-title');
+            const alertDesc = document.getElementById('feedback-desc');
+
+            alertTitle.innerText = title;
+            alertDesc.innerText = desc;
+
+            // Colors based on state
+            alertBox.className = "fixed bottom-12 left-1/2 -translate-x-1/2 z-50 flex items-center space-x-3 px-6 py-3.5 rounded-2xl shadow-2xl border pop-in max-w-sm w-[90%]";
+            if (status === "success") {
+                alertBox.classList.add('bg-emerald-950/90', 'border-emerald-500/50', 'text-emerald-100');
+                alertIcon.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i>`;
+            } else if (status === "error") {
+                alertBox.classList.add('bg-rose-950/90', 'border-rose-500/50', 'text-rose-100');
+                alertIcon.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-400"></i>`;
+            } else {
+                alertBox.classList.add('bg-indigo-950/90', 'border-indigo-500/50', 'text-indigo-100');
+                alertIcon.innerHTML = `<i class="fa-solid fa-circle-info text-indigo-400"></i>`;
+            }
+
+            alertBox.classList.remove('hidden');
+            setTimeout(() => {
+                alertBox.classList.add('hidden');
+            }, 4000);
+        }
+
+        // Helper to shuffle arrays
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Trigger chosen mode directly from splash menu selection
+        function startPlayMode(mode) {
+            playMode = mode;
+            startGame(true);
+        }
+
+        // Game Starter
+        function startGame(forceRestart = false) {
+            score = 0;
+            streak = 0;
+            maxStreak = 0;
+            updateHUDStats();
+            
+            // Hide menu overlays
+            document.getElementById('splash-screen').classList.add('hidden');
+            document.getElementById('word-list-screen').classList.add('hidden');
+            document.getElementById('game-over-screen').classList.add('hidden');
+            
+            // Show HUD
+            document.getElementById('game-hud').classList.remove('hidden');
+
+            // Setup dynamic header label to remind users of chosen path
+            const headLabel = document.getElementById('sub-mode-header');
+            if (playMode === 'campaign') {
+                headLabel.innerText = "Journey Mode (Level-by-Level)";
+            } else if (playMode === 'focus_meanings') {
+                headLabel.innerText = "Focus Practice: Definitions Matcher";
+            } else if (playMode === 'focus_spelling') {
+                headLabel.innerText = "Focus Practice: Spelling Slinger";
+            } else if (playMode === 'focus_story') {
+                headLabel.innerText = "Focus Practice: Context Investigator";
+            }
+
+            // Shuffle pool from complete list of all 35 words
+            const shuffledPool = shuffle([...VOCABULARY]);
+
+            if (playMode === 'campaign') {
+                selectedStageWords = shuffledPool.slice(0, 12); // Split 12 random words for Campaign Sequence (6 meanings, 6 spellings)
+                startStage(1);
+            } else if (playMode === 'focus_meanings') {
+                selectedStageWords = shuffledPool; // Prepare ALL 35 target definition questions
+                startStage(1);
+            } else if (playMode === 'focus_spelling') {
+                selectedStageWords = shuffledPool; // Prepare ALL 35 target spelling questions
+                startStage(2);
+            } else if (playMode === 'focus_story') {
+                startStage(3); // Go straight to interactive paragraph
+            }
+        }
+
+        // Setup HUD display
+        function updateHUDStats() {
+            document.getElementById('global-score').innerText = String(score).padStart(3, '0');
+            document.getElementById('streak-counter').innerText = streak;
+            if (streak > maxStreak) {
+                maxStreak = streak;
+            }
+        }
+
+        // Phase control logic
+        function startStage(stageNum) {
+            currentStage = stageNum;
+            currentRoundIndex = 0;
+            
+            // Manage pills highlighted
+            ['pill-stage-1', 'pill-stage-2', 'pill-stage-3'].forEach((id, idx) => {
+                const el = document.getElementById(id);
+                if (idx + 1 === stageNum) {
+                    el.className = "text-xs font-black px-3 py-1 rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500 text-white shadow-lg";
+                } else {
+                    el.className = "text-xs font-bold px-3 py-1 rounded-full bg-slate-800 text-slate-500 border border-slate-700/60";
+                }
+            });
+
+            // Toggle panels
+            document.getElementById('stage-1-panel').classList.add('hidden');
+            document.getElementById('stage-2-panel').classList.add('hidden');
+            document.getElementById('stage-3-panel').classList.add('hidden');
+
+            if (stageNum === 1) {
+                document.getElementById('stage-1-panel').classList.remove('hidden');
+                setupStage1Round();
+            } else if (stageNum === 2) {
+                document.getElementById('stage-2-panel').classList.remove('hidden');
+                setupStage2Round();
+            } else if (stageNum === 3) {
+                document.getElementById('stage-3-panel').classList.remove('hidden');
+                
+                // One-time initialization of Stage 3 multi-story states
+                activeStoryIndex = 0; 
+                storyBlanksSelected = {};
+                activeBlankId = "blank1";
+                renderStorySelectors();
+                setupStage3Story();
+            }
+        }
+
+        function updateProgressBar(percent) {
+            document.getElementById('stage-progress-bar').style.width = percent + "%";
+        }
+
+
+        /* ================= STAGE 1: MEANING MATCHER IMPLEMENTATION ================= */
+        function setupStage1Round() {
+            // Determine dynamic total rounds based on gameplay mode (Campaign gets 6, Focus gets all 35)
+            const totalRounds = (playMode === 'campaign') ? 6 : VOCABULARY.length;
+
+            if (currentRoundIndex >= totalRounds) {
+                if (playMode === 'campaign') {
+                    showAlert("Stage 1 Cleared!", "Unlock Level 2: Spelling Slinger!", "info");
+                    setTimeout(() => { startStage(2); }, 1500);
+                } else {
+                    showAlert("Focus Mastered!", "Incredible! You matched all 35 definitions!", "success");
+                    setTimeout(() => { concludeGame(); }, 1500);
+                }
+                return;
+            }
+
+            const prefixLabel = (playMode === 'campaign') ? "Stage 1" : "Focus Practice";
+            document.getElementById('round-indicator').innerText = `${prefixLabel}: Q ${currentRoundIndex + 1} / ${totalRounds}`;
+            updateProgressBar(((currentRoundIndex + 1) / totalRounds) * 100);
+
+            // Fetch target word
+            s1TargetWordObject = selectedStageWords[currentRoundIndex];
+
+            // Render Prompt Word
+            document.getElementById('s1-target-word').innerText = s1TargetWordObject.word;
+            document.getElementById('s1-word-clue').innerText = `"${s1TargetWordObject.hint.replace(s1TargetWordObject.word, "______")}"`;
+
+            // Prepare 3 alternative definitions
+            let wrongOptions = VOCABULARY.filter(item => item.word !== s1TargetWordObject.word);
+            shuffle(wrongOptions);
+            let options = [s1TargetWordObject, wrongOptions[0], wrongOptions[1]];
+            shuffle(options); // mix correct and incorrect
+
+            // Determine correct choice index (A, B, or C)
+            options.forEach((opt, idx) => {
+                if (opt.word === s1TargetWordObject.word) {
+                    s1CorrectLetter = String.fromCharCode(65 + idx); // 'A', 'B', or 'C'
+                }
+            });
+
+            // Build Options Buttons
+            const optionsContainer = document.getElementById('s1-options-container');
+            optionsContainer.innerHTML = "";
+
+            options.forEach((opt, idx) => {
+                const optBtn = document.createElement('button');
+                optBtn.className = "w-full text-left p-4 rounded-2xl bg-slate-900/80 hover:bg-slate-700/60 border border-slate-700/60 active:border-indigo-500 transition-all duration-200 flex items-start gap-4 transform active:scale-95";
+                
+                // Option Label
+                const labelLetter = String.fromCharCode(65 + idx); // A, B, C
+                optBtn.innerHTML = `
+                    <div class="bg-indigo-600/30 text-indigo-400 w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shrink-0">
+                        ${labelLetter}
+                    </div>
+                    <div class="flex-grow">
+                        <p class="text-sm font-medium text-slate-200 leading-relaxed">${opt.definition}</p>
+                    </div>
+                `;
+                
+                optBtn.onclick = () => handleStage1Answer(opt.word === s1TargetWordObject.word, optBtn);
+                optionsContainer.appendChild(optBtn);
+            });
+        }
+
+        function handleStage1Answer(isCorrect, element) {
+            // Disable all options so player can't multi-tap
+            const buttons = document.querySelectorAll('#s1-options-container button');
+            buttons.forEach(btn => btn.disabled = true);
+
+            if (isCorrect) {
+                element.classList.remove('border-slate-700/60');
+                element.classList.add('border-emerald-500', 'bg-emerald-950/40', 'correct-flash');
+                score += 50 + (streak * 5);
+                streak++;
+                updateHUDStats();
+                showAlert(`Correct!`, `Option ${s1CorrectLetter} was indeed correct! Streak: ${streak} (+${50 + (streak * 5)} pts)`, "success");
+            } else {
+                element.classList.remove('border-slate-700/60');
+                element.classList.add('border-rose-500', 'bg-rose-950/40', 'incorrect-flash');
+                
+                // Highlight the correct answer
+                buttons.forEach(btn => {
+                    if (btn.innerText.includes(s1TargetWordObject.definition)) {
+                        btn.classList.add('border-emerald-500/50', 'bg-emerald-900/20');
+                    }
+                });
+
+                streak = 0;
+                updateHUDStats();
+                showAlert("Oops!", `Incorrect. The correct answer was option ${s1CorrectLetter}: "${s1TargetWordObject.definition}"`, "error");
+            }
+
+            // Move to next question after lag
+            setTimeout(() => {
+                currentRoundIndex++;
+                setupStage1Round();
+            }, 2500);
+        }
+
+
+        /* ================= STAGE 2: SPELLING SLINGER IMPLEMENTATION ================= */
+        function setupStage2Round() {
+            // Determine dynamic total rounds based on gameplay mode (Campaign gets 6, Focus gets all 35)
+            const totalRounds = (playMode === 'campaign') ? 6 : VOCABULARY.length;
+
+            if (currentRoundIndex >= totalRounds) {
+                if (playMode === 'campaign') {
+                    showAlert("Stage 2 Spelled!", "Unlock Finale Level: Context Investigator!", "info");
+                    setTimeout(() => { startStage(3); }, 1500);
+                } else {
+                    showAlert("Focus Mastered!", "Incredible! You spelled all 35 words correctly!", "success");
+                    setTimeout(() => { concludeGame(); }, 1500);
+                }
+                return;
+            }
+
+            const prefixLabel = (playMode === 'campaign') ? "Stage 2" : "Focus Practice";
+            document.getElementById('round-indicator').innerText = `${prefixLabel}: Word ${currentRoundIndex + 1} / ${totalRounds}`;
+            updateProgressBar(((currentRoundIndex + 1) / totalRounds) * 100);
+
+            // Fetch current word. In campaign mode, start from offset 6. In focus, start from offset 0.
+            const indexOffset = (playMode === 'campaign') ? 6 : 0;
+            currentSpellingWord = selectedStageWords[currentRoundIndex + indexOffset]; 
+            userSpelledArray = [];
+
+            // Setup Definition Tip
+            document.getElementById('s2-definition-prompt').innerText = `"${currentSpellingWord.definition}"`;
+
+            // Prepare letter pools
+            const spellingLetters = currentSpellingWord.word.split("");
+            // Add decoy random letters if the word is short (less than 7 letters)
+            if (spellingLetters.length < 7) {
+                const decoys = "aeioustlnr".split("");
+                for (let i = 0; i < 3; i++) {
+                    const randomDecoy = decoys[Math.floor(Math.random() * decoys.length)];
+                    if (!spellingLetters.includes(randomDecoy)) {
+                        spellingLetters.push(randomDecoy);
+                    }
+                }
+            }
+
+            scrambledLettersArray = shuffle([...spellingLetters]);
+            renderSpellingWorkspace();
+        }
+
+        function renderSpellingWorkspace() {
+            // Constructed Spelled Area
+            const constructedArea = document.getElementById('s2-constructed-word-area');
+            constructedArea.innerHTML = "";
+            
+            // Render letters typed so far
+            if (userSpelledArray.length === 0) {
+                constructedArea.innerHTML = `<span class="text-slate-500 text-xs tracking-wider uppercase">Tap the letters below in order</span>`;
+            } else {
+                userSpelledArray.forEach((letterObj) => {
+                    const letterBox = document.createElement('div');
+                    letterBox.className = "px-3 py-2 bg-gradient-to-b from-indigo-500 to-indigo-600 text-white font-black text-xl rounded-xl flex items-center justify-center shadow-md border-b-4 border-indigo-800 tracking-normal transform scale-100 transition-all cursor-pointer";
+                    letterBox.innerText = letterObj.letter;
+                    // Clicking letter in work area deletes it
+                    letterBox.onclick = () => removeLetterFromWorkspace(letterObj);
+                    constructedArea.appendChild(letterBox);
+                });
+            }
+
+            // Scrambled Letter Source pool
+            const poolArea = document.getElementById('s2-scrambled-pool');
+            poolArea.innerHTML = "";
+
+            scrambledLettersArray.forEach((letterObj, index) => {
+                const letterBtn = document.createElement('button');
+                
+                if (letterObj.used) {
+                    // Grayed out
+                    letterBtn.className = "px-3 py-2 bg-slate-900 border border-slate-800 text-slate-700 font-bold rounded-xl text-lg opacity-30 cursor-not-allowed";
+                    letterBtn.disabled = true;
+                } else {
+                    // Playable
+                    letterBtn.className = "px-3 py-2 bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white font-black rounded-xl text-lg border-2 border-indigo-500/30 active:border-cyan-400 active:scale-90 transition-all flex items-center justify-center shadow-lg";
+                    letterBtn.disabled = false;
+                }
+
+                letterBtn.innerText = letterObj.letter || letterObj;
+                letterBtn.onclick = () => addLetterToWorkspace(letterObj, index);
+                poolArea.appendChild(letterBtn);
+            });
+        }
+
+        function addLetterToWorkspace(letter, origIndex) {
+            // Convert to object style if simple string
+            const letterObj = typeof letter === 'object' ? letter : { letter: letter, index: origIndex, id: crypto.randomUUID() };
+            
+            // Mark as used in original array
+            if (typeof scrambledLettersArray[origIndex] === 'string') {
+                scrambledLettersArray[origIndex] = { letter: letter, used: true, id: letterObj.id };
+            } else {
+                scrambledLettersArray[origIndex].used = true;
+            }
+
+            userSpelledArray.push(letterObj);
+            renderSpellingWorkspace();
+        }
+
+        function removeLetterFromWorkspace(letterObj) {
+            // Remove from used list
+            userSpelledArray = userSpelledArray.filter(item => item.id !== letterObj.id);
+            // Re-enable in pool
+            const target = scrambledLettersArray.find(item => item.id === letterObj.id);
+            if (target) {
+                target.used = false;
+            }
+            renderSpellingWorkspace();
+        }
+
+        function backspaceSpell() {
+            if (userSpelledArray.length > 0) {
+                const popped = userSpelledArray.pop();
+                const target = scrambledLettersArray.find(item => item.id === popped.id);
+                if (target) {
+                    target.used = false;
+                }
+                renderSpellingWorkspace();
+            }
+        }
+
+        function clearSpell() {
+            userSpelledArray = [];
+            scrambledLettersArray = scrambledLettersArray.map(item => {
+                if (typeof item === 'object') {
+                    item.used = false;
+                }
+                return item;
+            });
+            renderSpellingWorkspace();
+        }
+
+        function checkSpelling() {
+            const attemptedWord = userSpelledArray.map(item => item.letter).join("");
+            const isCorrect = (attemptedWord.toLowerCase().trim() === currentSpellingWord.word.toLowerCase().trim());
+
+            const container = document.getElementById('s2-constructed-word-area');
+
+            if (isCorrect) {
+                container.classList.add('correct-flash');
+                score += 80 + (streak * 10);
+                streak++;
+                updateHUDStats();
+                showAlert("Sensational Snap!", `Correctly spelled "${currentSpellingWord.word}"! (+${80 + (streak * 10)} pts)`, "success");
+                
+                setTimeout(() => {
+                    container.classList.remove('correct-flash');
+                    currentRoundIndex++;
+                    setupStage2Round();
+                }, 1800);
+            } else {
+                container.classList.add('incorrect-flash');
+                streak = 0;
+                updateHUDStats();
+                showAlert("Shaky Camera!", `That's not the right spelling. Try again or reset!`, "error");
+                
+                setTimeout(() => {
+                    container.classList.remove('incorrect-flash');
+                }, 800);
+            }
+        }
+
+
+        /* ================= STAGE 3: CONTEXT EXPLORER (STORY DRAG & DROP) ================= */
+
+        // Dynamic tabs renderer for the multiple stories
+        function renderStorySelectors() {
+            const tabArea = document.getElementById('story-selector-tabs');
+            tabArea.innerHTML = "";
+
+            STORY_POOL.forEach((storyObj, idx) => {
+                const btn = document.createElement('button');
+                const isSelected = activeStoryIndex === idx;
+
+                if (isSelected) {
+                    btn.className = "px-4 py-2 bg-pink-600 text-white rounded-xl font-bold text-xs shadow-md border-b-2 border-pink-800 scale-105 transition-all duration-200";
+                } else {
+                    btn.className = "px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-medium text-xs transition-all border border-slate-700/50";
+                }
+
+                btn.innerText = `Case ${idx + 1}`;
+                btn.onclick = () => switchStoryCase(idx);
+                tabArea.appendChild(btn);
+            });
+        }
+
+        function switchStoryCase(storyIndex) {
+            activeStoryIndex = storyIndex;
+            storyBlanksSelected = {};
+            activeBlankId = "blank1"; // reset target slot back to the first blank in new story
+            renderStorySelectors();
+            setupStage3Story();
+        }
+
+        function setupStage3Story() {
+            document.getElementById('round-indicator').innerText = "Stage 3: Story Investigator Finale";
+            updateProgressBar(90);
+
+            const activeStoryObj = STORY_POOL[activeStoryIndex];
+
+            // Build Paragraphs Markup
+            const textContainer = document.getElementById('s3-story-text');
+            textContainer.innerHTML = "";
+
+            activeStoryObj.paragraphs.forEach((para, pIdx) => {
+                let formattedPara = para;
+                
+                // Replace curly bracket tags with stylized interactive buttons
+                Object.keys(activeStoryObj.mapping).forEach(blankId => {
+                    const placeholder = `{${blankId}}`;
+                    if (formattedPara.includes(placeholder)) {
+                        const wordSelected = storyBlanksSelected[blankId] || "______";
+                        const isChosenClass = storyBlanksSelected[blankId] ? "text-pink-400 border-pink-500 bg-pink-950/20" : "text-slate-400 border-dashed border-slate-700 bg-slate-900";
+                        const isActiveClass = activeBlankId === blankId ? "ring-2 ring-indigo-500 scale-105" : "";
+
+                        const buttonHtml = `
+                            <button id="s3-btn-${blankId}" onclick="selectBlank('${blankId}')" class="px-3 py-1 mx-1 inline-block border-2 ${isChosenClass} ${isActiveClass} rounded-xl font-bold transition-all text-xs md:text-sm font-mono tracking-wide transform">
+                                ${wordSelected}
+                            </button>
+                        `;
+                        formattedPara = formattedPara.replace(placeholder, buttonHtml);
+                    }
+                });
+
+                const pTag = document.createElement('p');
+                pTag.className = "leading-relaxed mb-4 text-justify text-slate-300 text-sm md:text-base";
+                pTag.innerHTML = formattedPara;
+                textContainer.appendChild(pTag);
+            });
+
+            // Populate Word Bank
+            renderWordBank();
+        }
+
+        function selectBlank(blankId) {
+            activeBlankId = blankId;
+            // Redraw story to update active ring styling
+            setupStage3Story();
+        }
+
+        function renderWordBank() {
+            const bankArea = document.getElementById('s3-word-bank');
+            bankArea.innerHTML = "";
+
+            const activeStoryObj = STORY_POOL[activeStoryIndex];
+
+            // Use the exact words assigned to Story blanks, shuffle them
+            const wordBankWords = shuffle(Object.values(activeStoryObj.mapping));
+
+            wordBankWords.forEach(word => {
+                const isUsed = Object.values(storyBlanksSelected).includes(word);
+                
+                const wordBtn = document.createElement('button');
+                if (isUsed) {
+                    wordBtn.className = "px-3 py-2 bg-slate-900 text-slate-600 border border-slate-800 rounded-xl text-xs font-semibold cursor-not-allowed opacity-40";
+                    wordBtn.disabled = true;
+                } else {
+                    wordBtn.className = "px-3 py-2 bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold transition-all transform active:scale-90 hover:border-indigo-400";
+                }
+
+                wordBtn.innerText = word;
+                wordBtn.onclick = () => fillBlankWithWord(word);
+                bankArea.appendChild(wordBtn);
+            });
+        }
+
+        function fillBlankWithWord(word) {
+            if (!activeBlankId) {
+                showAlert("Select Slot First", "Tap on one of the blank slots in the text above to select it!", "info");
+                return;
+            }
+
+            // Assign word to blank
+            storyBlanksSelected[activeBlankId] = word;
+
+            const activeStoryObj = STORY_POOL[activeStoryIndex];
+
+            // Find next unassigned blank and make it active for comfortable flow
+            const blanksKeys = Object.keys(activeStoryObj.mapping);
+            const currentIdx = blanksKeys.indexOf(activeBlankId);
+            
+            // Find first blank that is still empty
+            let nextEmptyBlank = blanksKeys.find((key, index) => index > currentIdx && !storyBlanksSelected[key]);
+            if (!nextEmptyBlank) {
+                // Wrap around to start if needed
+                nextEmptyBlank = blanksKeys.find(key => !storyBlanksSelected[key]);
+            }
+
+            activeBlankId = nextEmptyBlank || null;
+
+            // Re-render
+            setupStage3Story();
+        }
+
+        function checkStoryAnswers() {
+            const activeStoryObj = STORY_POOL[activeStoryIndex];
+            const blanksKeys = Object.keys(activeStoryObj.mapping);
+            let unfilledCount = blanksKeys.filter(key => !storyBlanksSelected[key]).length;
+
+            if (unfilledCount > 0) {
+                showAlert("Story Incomplete", `You have ${unfilledCount} empty blanks remaining! Fill them out before verifying.`, "error");
+                return;
+            }
+
+            let correctCount = 0;
+            blanksKeys.forEach(key => {
+                const correctWord = activeStoryObj.mapping[key];
+                const userWord = storyBlanksSelected[key];
+
+                const btn = document.getElementById(`s3-btn-${key}`);
+                if (correctWord === userWord) {
+                    correctCount++;
+                    btn.className = "px-3 py-1 mx-1 inline-block border-2 border-emerald-500 bg-emerald-950/40 text-emerald-300 rounded-xl font-bold font-mono text-xs md:text-sm";
+                } else {
+                    btn.className = "px-3 py-1 mx-1 inline-block border-2 border-rose-500 bg-rose-950/40 text-rose-300 rounded-xl font-bold font-mono text-xs md:text-sm";
+                }
+            });
+
+            if (correctCount === blanksKeys.length) {
+                const finalBonus = 400;
+                score += finalBonus;
+                updateHUDStats();
+                showAlert("Flawless Journalism!", `Case Excerpt ${activeStoryIndex + 1} completed perfectly! (+${finalBonus} pts)`, "success");
+                
+                setTimeout(() => {
+                    concludeGame();
+                }, 2000);
+            } else {
+                showAlert("Story Errors Detected!", `You got ${correctCount} / ${blanksKeys.length} correct. Adjust the incorrect slots in red!`, "error");
+            }
+        }
+
+
+        /* ================= CONCLUSION & REPORT GENERATION ================= */
+        function concludeGame() {
+            // Hide HUD
+            document.getElementById('game-hud').classList.add('hidden');
+            
+            // Hide active stage panels
+            document.getElementById('stage-1-panel').classList.add('hidden');
+            document.getElementById('stage-2-panel').classList.add('hidden');
+            document.getElementById('stage-3-panel').classList.add('hidden');
+
+            // Render Final Screen
+            document.getElementById('game-over-screen').classList.remove('hidden');
+
+            // Set dynamic stats
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('final-streak').innerText = maxStreak;
+
+            const vocabLabel = document.getElementById('final-vocab');
+            const streakLabel = document.getElementById('stat-label-streak');
+            
+            // Customize conclusion message depending on game mode
+            if (playMode === 'campaign') {
+                document.getElementById('conclusion-headline').innerText = "Perfect Journey!";
+                document.getElementById('conclusion-desc').innerText = `You completed Stage 3 Story Case ${activeStoryIndex + 1}! Try practicing other Story Cases in Focus Mode to master all 35 words!`;
+                vocabLabel.innerText = "CAMPAIGN";
+                streakLabel.innerText = "MAX STREAK";
+            } else if (playMode === 'focus_meanings') {
+                document.getElementById('conclusion-headline').innerText = "Definition Master!";
+                document.getElementById('conclusion-desc').innerText = "Incredible effort! You successfully evaluated all 35 target definitions in the deck.";
+                vocabLabel.innerText = "MEANINGS";
+                streakLabel.innerText = "STREAK";
+            } else if (playMode === 'focus_spelling') {
+                document.getElementById('conclusion-headline').innerText = "Spelling Legend!";
+                document.getElementById('conclusion-desc').innerText = "Marvelous focus! You solved the scrambled spelling cards for all 35 target terms.";
+                vocabLabel.innerText = "SPELLING";
+                streakLabel.innerText = "STREAK";
+            } else if (playMode === 'focus_story') {
+                document.getElementById('conclusion-headline').innerText = "Story Investigator!";
+                document.getElementById('conclusion-desc').innerText = `You successfully solved Context Story Case ${activeStoryIndex + 1}! Play again to tackle the other cases!`;
+                vocabLabel.innerText = "STORIES";
+                streakLabel.innerText = "MAX STREAK";
+            }
+            
+            // Generate diagnostic feedback based on performance
+            const accuracyMeaning = (playMode === 'focus_spelling' || playMode === 'focus_story') ? "N/A" : (maxStreak > 28 ? "100%" : maxStreak > 18 ? "85%" : "65%");
+            const accuracySpelling = (playMode === 'focus_meanings' || playMode === 'focus_story') ? "N/A" : (maxStreak > 28 ? "100%" : maxStreak > 18 ? "80%" : "60%");
+            
+            document.getElementById('stat-meaning-acc').innerText = accuracyMeaning;
+            document.getElementById('stat-spelling-acc').innerText = accuracySpelling;
+        }
+    </script>
+</body>
+</html>
